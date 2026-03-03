@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrep | Pro Placement Platform</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        :root {
+            /* Vivid Color Palette */
+            --bg-body: #f0f4f8;
+            --bg-glass: rgba(255, 255, 255, 0.95);
+            --primary: #6366f1; /* Indigo */
+            --primary-grad: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent: #ec4899; /* Pink */
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+            --success: #10b981;
+            
+            /* Sidebar Colors */
+            --sidebar-bg: #ffffff;
+            --sidebar-active: #eff6ff;
+        }
+
+        * { box-sizing: border-box; outline: none; }
+        
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-body);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            background-image: url('https://grainy-gradients.vercel.app/noise.svg'), linear-gradient(to bottom right, #e0e7ff, #f3e8ff, #fce7f3);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+        }
+        
+        body.logged-in {
+            background: var(--bg-body);
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { transform: translateX(-50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide-in { animation: slideIn 0.5s ease-out; }
+
+        /* --- UTILITIES --- */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .hidden { display: none !important; }
+        .w-full { width: 100%; }
+        
+        /* --- LOGIN PAGE --- */
+        .login-wrapper {
+            position: fixed; inset: 0;
+            background: url('SmartPrep_login_background.png') center/cover no-repeat;
+            z-index: 50;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+        
+        .login-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.2);
+            pointer-events: none;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.7; }
+        }
+        
+        .bg-elements {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .student-silhouette {
+            position: absolute;
+            left: 5%;
+            bottom: 10%;
+            width: 280px;
+            height: 400px;
+            opacity: 0.25;
+            animation: silhouettePulse 5s ease-in-out infinite;
+        }
+        
+        @keyframes silhouettePulse {
+            0%, 100% { opacity: 0.18; }
+            50% { opacity: 0.3; }
+        }
+        
+        .chart-element {
+            position: absolute;
+            opacity: 0.2;
+            animation: floatElement 6s ease-in-out infinite;
+        }
+        
+        .chart-element:nth-child(2) {
+            top: 10%; right: 12%; width: 180px; height: 140px;
+            animation-duration: 7s; animation-delay: 0.5s;
+        }
+        
+        .chart-element:nth-child(3) {
+            top: 35%; right: 5%; width: 160px; height: 120px;
+            animation-duration: 8s; animation-delay: 1s;
+        }
+        
+        .chart-element:nth-child(4) {
+            bottom: 15%; right: 20%; width: 140px; height: 100px;
+            animation-duration: 6.5s; animation-delay: 0.8s;
+        }
+        
+        @keyframes floatElement {
+            0%, 100% { transform: translateY(0px); opacity: 0.15; }
+            50% { transform: translateY(-15px); opacity: 0.25; }
+        }
+        
+        .code-symbol {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            opacity: 0.12;
+            animation: symbolFloat 8s ease-in-out infinite;
+        }
+        
+        @keyframes symbolFloat {
+            0%, 100% { opacity: 0.08; transform: translateY(0); }
+            50% { opacity: 0.15; transform: translateY(-10px); }
+        }
+        
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 400px;
+            text-align: center;
+            border: 1px solid white;
+            backdrop-filter: blur(10px);
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+        .input-field {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            font-family: inherit;
+            transition: 0.3s;
+            background: #f8fafc;
+        }
+        .input-field:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* --- LOADING SCREEN --- */
+        .loader-overlay {
+            position: fixed; inset: 0;
+            background: white;
+            z-index: 100;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid #e0e7ff;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: 260px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 25px;
+            display: flex; 
+            flex-direction: column;
+            z-index: 10;
+            flex-shrink: 0;
+            overflow-y: auto;
+        }
+        
+        .brand {
+            font-size: 26px;
+            font-weight: 800;
+            background: var(--primary-grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 50px;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .nav-item {
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 8px;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: var(--sidebar-active);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .nav-item i { width: 20px; text-align: center; }
+
+        /* --- MAIN DASHBOARD --- */
+        main { 
+            flex: 1 1 auto; 
+            overflow-y: auto; 
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        
+        .container { 
+            padding: 40px; 
+            max-width: 1200px; 
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary-grad);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5); }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+        /* --- COMPANY CARDS --- */
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .company-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            cursor: pointer;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        .company-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            border-color: var(--primary);
+        }
+        .company-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .company-card:hover::before {
+            left: 100%;
+        }
+        .c-logo {
+            width: 60px; height: 60px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* --- TEST INTERFACE --- */
+        .test-wrapper { display: flex; flex-direction: column; height: 100vh; background: #f8fafc; }
+        
+        .test-header {
+            height: 70px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .test-body { flex: 1; display: flex; overflow: hidden; }
+
+        .question-pane {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .interaction-pane {
+            flex: 1;
+            background: #1e1e1e; /* Dark IDE for contrast */
+            display: flex; flex-direction: column;
+            border-left: 1px solid var(--border);
+        }
+
+        /* Question Palette */
+        .palette-bar {
+            width: 80px;
+            background: white;
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center;
+            padding: 20px 0; gap: 12px;
+            overflow-y: auto;
+        }
+        .p-btn {
+            width: 45px; height: 45px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 700;
+            transition: .2s;
+        }
+        .p-btn.active { border-color: var(--primary); color: var(--primary); background: #e0e7ff; }
+        .p-btn.solved { background: var(--success); border-color: var(--success); color: white; }
+
+        /* Code Editor Mockup */
+        .editor-container { flex: 1; position: relative; font-family: 'JetBrains Mono', monospace; }
+        textarea.code-area {
+            width: 100%; height: 100%;
+            background: transparent;
+            color: #e2e8f0;
+            border: none;
+            resize: none;
+            padding: 20px;
+            font-family: inherit;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .code-header {
+            background: #2d2d2d;
+            padding: 10px 20px;
+            color: #9ca3af;
+            font-size: 13px;
+            display: flex; justify-content: space-between;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="loader" class="loader-overlay hidden">
+    <div class="spinner"></div>
+    <h3 style="margin-top:20px;color:var(--text-muted)" id="loaderText">Loading Environment...</h3>
+</div>
+
+<div id="loginView" class="login-wrapper">
+    <div class="bg-elements">
+        <!-- Student Silhouette with Laptop -->
+        <svg class="student-silhouette" viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="studentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#a855f7;stop-opacity:0.8" />
+                </linearGradient>
+            </defs>
+            <!-- Head -->
+            <circle cx="50" cy="25" r="15" fill="url(#studentGrad)" opacity="0.9"/>
+            <!-- Shoulders & Body -->
+            <path d="M 35 40 Q 35 50 30 70 L 30 100 M 65 40 Q 65 50 70 70 L 70 100" stroke="url(#studentGrad)" stroke-width="8" fill="none" stroke-linecap="round"/>
+            <!-- Arms -->
+            <path d="M 30 55 L 10 75" stroke="url(#studentGrad)" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path d="M 70 55 L 90 65" stroke="url(#studentGrad)" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <!-- Laptop -->
+            <rect x="15" y="85" width="50" height="35" rx="3" fill="none" stroke="url(#studentGrad)" stroke-width="3" opacity="0.8"/>
+            <rect x="17" y="87" width="46" height="25" rx="2" fill="rgba(99,102,241,0.1)" stroke="url(#studentGrad)" stroke-width="1.5"/>
+        </svg>
+        
+        <!-- Skill Progress Chart -->
+        <svg class="chart-element" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="chartGrad1" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0" />
+                    <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <rect x="10" y="65" width="12" height="35" fill="url(#chartGrad1)" rx="2"/>
+            <rect x="35" y="45" width="12" height="55" fill="url(#chartGrad1)" rx="2" opacity="0.8"/>
+            <rect x="60" y="30" width="12" height="70" fill="url(#chartGrad1)" rx="2" opacity="0.9"/>
+            <rect x="85" y="50" width="12" height="50" fill="url(#chartGrad1)" rx="2" opacity="0.7"/>
+        </svg>
+        
+        <!-- Analytics Dashboard -->
+        <svg class="chart-element" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="dashGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#ec4899;stop-opacity:0.8" />
+                </linearGradient>
+            </defs>
+            <rect x="5" y="5" width="110" height="90" fill="none" stroke="url(#dashGrad)" stroke-width="2" rx="4" opacity="0.6"/>
+            <circle cx="25" cy="25" r="8" fill="url(#dashGrad)" opacity="0.7"/>
+            <rect x="40" y="20" width="30" height="10" fill="url(#dashGrad)" opacity="0.5" rx="2"/>
+            <path d="M 10 60 L 30 55 L 50 65 L 70 50 L 90 60" stroke="url(#dashGrad)" stroke-width="2" fill="none" opacity="0.6"/>
+        </svg>
+        
+        <!-- Test Preparation Visuals -->
+        <svg class="chart-element" viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="testGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.8" />
+                </linearGradient>
+            </defs>
+            <rect x="10" y="10" width="20" height="60" fill="url(#testGrad)" rx="2" opacity="0.7"/>
+            <rect x="40" y="25" width="20" height="45" fill="url(#testGrad)" rx="2" opacity="0.6"/>
+            <rect x="70" y="20" width="20" height="50" fill="url(#testGrad)" rx="2" opacity="0.8"/>
+        </svg>
+        
+        <!-- Coding Symbols -->
+        <div class="code-symbol" style="top: 20%; left: 35%;">&lt; &gt;</div>
+        <div class="code-symbol" style="top: 50%; left: 15%;">{}</div>
+        <div class="code-symbol" style="top: 70%; left: 50%;">;</div>
+        <div class="code-symbol" style="top: 35%; right: 35%;"> [ ]</div>
+    </div>
+    <div class="login-card fade-in">
+        <div class="brand" style="justify-content:center;margin-bottom:10px">
+            <i class="fa-solid fa-graduation-cap"></i> SmartPrep
+        </div>
+        <p style="color:var(--text-muted);margin-bottom:30px">Your gateway to top tier placements</p>
+        
+        <form onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="userName" class="input-field" placeholder="John Doe" required>
+            </div>
+            <div class="input-group">
+                <label>University Email</label>
+                <input type="email" id="userEmail" class="input-field" placeholder="john@university.edu" required>
+            </div>
+            <div class="input-group">
+                <label>Current CGPA</label>
+                <input type="number" id="userCGPA" step="0.01" class="input-field" placeholder="8.5" required>
+            </div>
+            <button type="submit" class="btn-primary w-full">Start Preparation</button>
+        </form>
+    </div>
+</div>
+
+<aside id="sidebar" class="hidden slide-in">
+    <div class="brand">
+        <i class="fa-solid fa-graduation-cap"></i> SmartPrep
+    </div>
+    <div class="nav-item active" onclick="switchView('dashboard')">
+        <i class="fa-solid fa-house"></i> Dashboard
+    </div>
+    <div class="nav-item" onclick="switchView('practicelabs')">
+        <i class="fa-solid fa-laptop-code"></i> Practice Labs
+    </div>
+    <div class="nav-item" onclick="switchView('analytics')">
+        <i class="fa-solid fa-chart-line"></i> Analytics
+    </div>
+    <div class="nav-item" onclick="switchView('aiinterview')">
+        <i class="fa-solid fa-brain"></i> AI Interview
+    </div>
+    <div class="nav-item" onclick="switchView('companies')">
+        <i class="fa-solid fa-building"></i> Companies
+    </div>
+    <div style="flex:1"></div>
+    <div class="nav-item" style="background:var(--bg-body)" onclick="switchView('profile')">
+        <i class="fa-solid fa-user"></i> <span id="navUser">User</span>
+    </div>
+</aside>
+
+<main id="app">
+    </main>
+
+<script>
+/* --- DATA STORE --- */
+const questions = [
+    {
+        id: 1, type: 'mcq', category: 'Aptitude',
+        text: "If A can do a work in 10 days and B in 15 days, how long will they take together?",
+        options: ["5 days", "6 days", "8 days", "9 days"], correct: 1 
+    },
+    {
+        id: 2, type: 'code', category: 'DSA - Strings',
+        text: "<h3>Reverse String</h3><p>Write a function that reverses a string.</p><p><b>Input:</b> s = 'hello'</p><p><b>Output:</b> 'olleh'</p>",
+        starterCode: {
+            python: "def reverseString(s):\n    # Your code here\n    pass\n\n# Test\nprint(reverseString('hello'))",
+            java: "class Solution {\n    public String reverseString(String s) {\n        // Your code here\n        return \"\";\n    }\n}",
+            cpp: "#include <iostream>\nusing namespace std;\n\nstring reverseString(string s) {\n    // Your code here\n    return \"\";\n}\n\nint main() {\n    cout << reverseString(\"hello\") << endl;\n    return 0;\n}",
+            javascript: "function reverseString(s) {\n    // Your code here\n    return \"\";\n}\n\nconsole.log(reverseString('hello'));"
+        },
+        testCases: [
+            {input: "hello", output: "olleh"},
+            {input: "world", output: "dlrow"}
+        ]
+    },
+    {
+        id: 3, type: 'mcq', category: 'Logic',
+        text: "Statements: All cars are cats. All fans are cats.<br>Conclusion: All cars are fans.",
+        options: ["True", "False", "Cannot be determined"], correct: 1
+    },
+    {
+        id: 4, type: 'code', category: 'DSA - Arrays',
+        text: "<h3>Two Sum</h3><p>Find two numbers that add up to a target sum.</p><p><b>Input:</b> arr = [2,7,11,15], target = 9</p><p><b>Output:</b> [2, 7]</p>",
+        starterCode: {
+            python: "def twoSum(arr, target):\n    # Your code here\n    pass\n\n# Test\nprint(twoSum([2,7,11,15], 9))",
+            java: "class Solution {\n    public int[] twoSum(int[] arr, int target) {\n        // Your code here\n        return new int[2];\n    }\n}",
+            cpp: "#include <iostream>\n#include <vector>\nusing namespace std;\n\nvector<int> twoSum(vector<int> arr, int target) {\n    // Your code here\n    return {};\n}\n\nint main() {\n    vector<int> result = twoSum({2,7,11,15}, 9);\n    return 0;\n}",
+            javascript: "function twoSum(arr, target) {\n    // Your code here\n    return [];\n}\n\nconsole.log(twoSum([2,7,11,15], 9));"
+        }
+    }
+];
+
+let state = {
+    user: { name: '', email: '', cgpa: '' },
+    currentCompany: '',
+    currentQIndex: 0,
+    answers: {},
+    timer: 1800,
+    selectedLanguage: 'python',
+    codeOutput: {},
+    codeError: {},
+    selectedLabId: null
+};
+
+/* --- CORE FUNCTIONS --- */
+
+function showLoader(text, callback) {
+    const loader = document.getElementById('loader');
+    const txt = document.getElementById('loaderText');
+    txt.innerText = text;
+    loader.classList.remove('hidden');
+    setTimeout(() => {
+        loader.classList.add('hidden');
+        if(callback) callback();
+    }, 1500); // Simulated delay
+}
+
+function handleLogin(e) {
+    e.preventDefault();
+    console.log('🔵 Login initiated...');
+    state.user.name = document.getElementById('userName').value;
+    state.user.email = document.getElementById('userEmail').value;
+    state.user.cgpa = document.getElementById('userCGPA').value;
+    
+    console.log('✅ User data saved:', state.user);
+    
+    document.getElementById('navUser').innerText = state.user.name.split(' ')[0];
+    
+    document.getElementById('loginView').classList.add('hidden');
+    document.body.classList.add('logged-in');
+    console.log('✅ Login view hidden, body logged-in class added');
+    
+    showLoader("Setting up your dashboard...", () => {
+        console.log('✅ Showing sidebar and rendering dashboard...');
+        document.getElementById('sidebar').classList.remove('hidden');
+        renderDashboard();
+    });
+}
+
+function switchView(viewName) {
+    if(viewName === 'dashboard') renderDashboard();
+    if(viewName === 'instructions') renderInstructions();
+    if(viewName === 'practicelabs') renderPracticeLabs();
+    if(viewName === 'analytics') renderAnalytics();
+    if(viewName === 'profile') renderProfile();
+    if(viewName === 'aiinterview') renderAIInterview();
+    if(viewName === 'companies') renderCompanies();
+    if(viewName === 'test') {
+        showLoader(`Loading ${state.currentCompany} Test Environment...`, () => {
+            renderTest();
+        });
+    }
+    if(viewName === 'result') {
+        showLoader("Analyzing Performance...", () => {
+            renderResult();
+        });
+    }
+}
+
+/* --- RENDERERS --- */
+
+function renderDashboard() {
+    console.log('🎨 Rendering Dashboard...');
+    const app = document.getElementById('app');
+    
+    if (!app) {
+        console.error('❌ ERROR: app element not found!');
+        return;
+    }
+    
+    console.log('✅ App element found');
+
+    app.innerHTML = `
+    <div class="container fade-in">
+        <header style="margin-bottom:40px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <h1 style="margin:0;font-size:32px">Welcome back, ${state.user.name} 👋</h1>
+                <p style="color:var(--text-muted);margin-top:5px">Your CGPA: <b>${state.user.cgpa}</b> | <span style="color:var(--success)">Eligible for all drives</span></p>
+            </div>
+            <button class="btn-secondary"><i class="fa-solid fa-bell"></i></button>
+        </header>
+
+        <div style="background:var(--primary-grad);padding:30px;border-radius:20px;color:white;display:flex;justify-content:space-between;align-items:center;margin-bottom:40px;position:relative;overflow:hidden">
+            <div style="position:relative;z-index:2">
+                <h2>Daily Coding Challenge</h2>
+                <p style="opacity:0.9">Solve the "Maximum Subarray" problem to keep your streak alive.</p>
+                <button class="btn-secondary" style="border:none;margin-top:10px;color:var(--primary)">Solve Now <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+            <i class="fa-solid fa-code" style="font-size:150px;position:absolute;right:-20px;bottom:-40px;opacity:0.2"></i>
+        </div>
+
+        <h3>Select Company Assessment</h3>
+        <div class="company-grid">
+            ${[
+                {name:'Google', icon:'fa-google', color:'#EA4335'},
+                {name:'Amazon', icon:'fa-amazon', color:'#FF9900'},
+                {name:'Microsoft', icon:'fa-microsoft', color:'#00A4EF'},
+                {name:'Infosys', icon:'fa-building', color:'#007CC3'}
+            ].map(c => `
+                <div class="company-card" onclick="state.currentCompany='${c.name}';switchView('instructions')">
+                    <div class="c-logo" style="background:${c.color}15;color:${c.color}">
+                        <i class="fa-brands ${c.icon}"></i>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                        <div>
+                            <h3 style="margin:0 0 5px 0">${c.name}</h3>
+                            <span style="font-size:12px;color:var(--text-muted)">Full Stack Role</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--border)"></i>
+                    </div>
+                    <div style="margin-top:20px;padding-top:20px;border-top:1px solid #f1f5f9;display:flex;gap:15px;font-size:13px;color:var(--text-muted)">
+                        <span><i class="fa-regular fa-clock"></i> 60m</span>
+                        <span><i class="fa-solid fa-list-check"></i> 30 Qs</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+
+        <h3 style="margin-top:50px">Learning Resources</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:25px">
+            <div class="company-card" onclick="switchView('practicelabs')" style="cursor:pointer">
+                <div class="c-logo" style="background:#10b98115;color:#10b981">
+                    <i class="fa-solid fa-flask"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">Practise Labs</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Hands-on coding environment to practice real-world problems. Complete challenges and build your portfolio.</p>
+                </div>
+                <div style="margin-top:15px;padding-top:15px;border-top:1px solid #f1f5f9;display:flex;gap:15px;font-size:12px;color:var(--text-muted)">
+                    <span><i class="fa-solid fa-code"></i> 200+ Labs</span>
+                    <span><i class="fa-solid fa-star"></i> 4.8/5</span>
+                </div>
+            </div>
+
+            <div class="company-card" onclick="switchView('analytics')" style="cursor:pointer">
+                <div class="c-logo" style="background:#ec489915;color:#ec4899">
+                    <i class="fa-solid fa-chart-bar"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">Analytics</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Detailed performance tracking and analytics dashboard. Monitor your progress and identify improvement areas.</p>
+                </div>
+                <div style="margin-top:15px;padding-top:15px;border-top:1px solid #f1f5f9;display:flex;gap:15px;font-size:12px;color:var(--text-muted)">
+                    <span><i class="fa-solid fa-chart-pie"></i> Real-time Data</span>
+                    <span><i class="fa-solid fa-zap"></i> AI Insights</span>
+                </div>
+            </div>
+
+            <div class="company-card" onclick="switchView('aiinterview')" style="cursor:pointer;background:linear-gradient(135deg, rgba(139,92,246,0.05) 0%, rgba(236,72,153,0.05) 100%);border:2px solid #e9d5ff">
+                <div class="c-logo" style="background:#8b5cf615;color:#8b5cf6">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">AI Interview</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Practice with AI-powered behavioral and technical interviews. Get real-time feedback and personalized coaching.</p>
+                </div>
+                <div style="margin-top:15px;padding-top:15px;border-top:1px solid #f1f5f9;display:flex;gap:15px;font-size:12px;color:var(--text-muted)">
+                    <span><i class="fa-solid fa-mic"></i> Live Practice</span>
+                    <span><i class="fa-solid fa-badge-check"></i> Certified</span>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="margin-top:50px">Quick Stats</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px">
+            <div style="background:white;padding:20px;border-radius:16px;box-shadow:var(--shadow);text-align:center">
+                <div style="font-size:32px;font-weight:700;color:var(--primary)">42</div>
+                <div style="color:var(--text-muted);font-size:13px;margin-top:8px">Problems Solved</div>
+            </div>
+            <div style="background:white;padding:20px;border-radius:16px;box-shadow:var(--shadow);text-align:center">
+                <div style="font-size:32px;font-weight:700;color:var(--accent)">1,450</div>
+                <div style="color:var(--text-muted);font-size:13px;margin-top:8px">Total XP</div>
+            </div>
+            <div style="background:white;padding:20px;border-radius:16px;box-shadow:var(--shadow);text-align:center">
+                <div style="font-size:32px;font-weight:700;color:var(--success)">8</div>
+                <div style="color:var(--text-muted);font-size:13px;margin-top:8px">Day Streak</div>
+            </div>
+            <div style="background:white;padding:20px;border-radius:16px;box-shadow:var(--shadow);text-align:center">
+                <div style="font-size:32px;font-weight:700;color:#f59e0b">87.5%</div>
+                <div style="color:var(--text-muted);font-size:13px;margin-top:8px">Accuracy Rate</div>
+            </div>
+        </div>
+
+        <h3 style="margin-top:50px">Recommended Topics</h3>
+        <div style="display:flex;gap:15px;flex-wrap:wrap">
+            ${[
+                {topic: 'Dynamic Programming', level: 'Hard', progress: 45},
+                {topic: 'System Design', level: 'Expert', progress: 30},
+                {topic: 'Graph Algorithms', level: 'Hard', progress: 65},
+                {topic: 'String Manipulation', level: 'Medium', progress: 85},
+                {topic: 'Database Optimization', level: 'Hard', progress: 20}
+            ].map(t => `
+                <div style="background:white;padding:15px 20px;border-radius:12px;border-left:4px solid ${t.level === 'Hard' ? '#ef4444' : t.level === 'Expert' ? '#8b5cf6' : '#f59e0b'};box-shadow:var(--shadow);flex:1;min-width:180px">
+                    <div style="display:flex;justify-content:space-between;align-items:start">
+                        <div>
+                            <h4 style="margin:0;font-size:14px">${t.topic}</h4>
+                            <span style="font-size:11px;color:var(--text-muted)">${t.level}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px;height:4px;background:#e2e8f0;border-radius:2px">
+                        <div style="height:100%;background:var(--primary-grad);width:${t.progress}%;border-radius:2px"></div>
+                    </div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:5px">${t.progress}% Complete</div>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
+}
+
+function renderInstructions() {
+    document.getElementById('app').innerHTML = `
+    <div class="container fade-in">
+        <button onclick="switchView('dashboard')" class="btn-secondary" style="margin-bottom:20px">Back</button>
+        <div style="background:white;padding:40px;border-radius:24px;max-width:800px;margin:0 auto;box-shadow:var(--shadow)">
+            <div style="text-align:center;margin-bottom:30px">
+                <h1 style="margin:0;font-size:36px">${state.currentCompany} Mock Drive</h1>
+                <p style="color:var(--text-muted)">Evaluation for ${state.user.name}</p>
+            </div>
+            <div style="display:flex;gap:20px;margin-bottom:30px">
+                <div style="flex:1;background:#f8fafc;padding:20px;border-radius:12px;text-align:center">
+                    <h3>30</h3><p style="margin:0;color:var(--text-muted)">Questions</p>
+                </div>
+                <div style="flex:1;background:#f8fafc;padding:20px;border-radius:12px;text-align:center">
+                    <h3>60m</h3><p style="margin:0;color:var(--text-muted)">Duration</p>
+                </div>
+                <div style="flex:1;background:#f8fafc;padding:20px;border-radius:12px;text-align:center">
+                    <h3>Coding</h3><p style="margin:0;color:var(--text-muted)">Included</p>
+                </div>
+            </div>
+            <button class="btn-primary w-full" onclick="switchView('test')">Begin Assessment</button>
+        </div>
+    </div>`;
+}
+
+function renderTest() {
+    document.getElementById('sidebar').classList.add('hidden');
+    const q = questions[state.currentQIndex];
+    
+    document.getElementById('app').innerHTML = `
+    <div class="test-wrapper">
+        <header class="test-header">
+            <div style="font-weight:700;font-size:20px;color:var(--primary)">SmartPrep <span style="color:var(--text-muted);font-weight:400">| ${state.currentCompany}</span></div>
+            <div style="background:#eff6ff;color:var(--primary);padding:8px 16px;border-radius:8px;font-family:'JetBrains Mono'">
+                <i class="fa-regular fa-clock"></i> 29:54
+            </div>
+            <button class="btn-primary" style="background:#ef4444;padding:8px 20px" onclick="switchView('result')">Finish</button>
+        </header>
+        
+        <div class="test-body">
+            <div class="palette-bar">
+                ${questions.map((_, i) => `
+                    <button class="p-btn ${i === state.currentQIndex ? 'active' : ''} ${state.answers[i+1] ? 'solved' : ''}" 
+                    onclick="state.currentQIndex=${i};renderTest()">${i+1}</button>
+                `).join('')}
+            </div>
+            
+            <div class="question-pane">
+                <span style="background:var(--primary);color:white;padding:4px 10px;border-radius:6px;font-size:12px;text-transform:uppercase;letter-spacing:1px">${q.category}</span>
+                <h2 style="margin-top:20px;line-height:1.5">Q${state.currentQIndex+1}. <br> ${q.text}</h2>
+                
+                ${q.type === 'mcq' ? `
+                    <div style="display:flex;flex-direction:column;gap:15px;margin-top:30px">
+                        ${q.options.map((opt, idx) => `
+                            <label style="display:flex;align-items:center;padding:15px;border:2px solid ${state.answers[q.id]===idx ? 'var(--primary)' : '#e2e8f0'};border-radius:12px;cursor:pointer;background:${state.answers[q.id]===idx ? '#e0e7ff' : 'transparent'}">
+                                <input type="radio" name="opt" ${state.answers[q.id]===idx ? 'checked' : ''} onchange="state.answers[${q.id}]=${idx};renderTest()" style="margin-right:15px;transform:scale(1.2)"> ${opt}
+                            </label>
+                        `).join('')}
+                    </div>
+                ` : `
+                    ${q.testCases ? `
+                        <div style="margin-top:20px;background:#f8fafc;padding:15px;border-radius:12px">
+                            <h4 style="margin:0 0 10px 0">Test Cases:</h4>
+                            ${q.testCases.map(tc => `
+                                <div style="margin-bottom:10px;font-family:'JetBrains Mono';font-size:12px">
+                                    <div><span style="color:var(--primary)">Input:</span> ${tc.input}</div>
+                                    <div><span style="color:var(--success)">Expected:</span> ${tc.output}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                `}
+            </div>
+
+            <div class="interaction-pane">
+                ${q.type === 'code' ? `
+                    <div class="code-header">
+                        <select id="langSelect" onchange="state.selectedLanguage=this.value;renderTest()" style="background:#2d2d2d;color:#9ca3af;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono'">
+                            <option value="python">Python 3</option>
+                            <option value="java">Java 17</option>
+                            <option value="cpp">C++ (g++)</option>
+                            <option value="javascript">JavaScript (Node.js)</option>
+                        </select>
+                        <span style="cursor:pointer;color:#9ca3af" onclick="document.querySelector('.code-area').value = '${(typeof q.starterCode === 'object' ? q.starterCode[state.selectedLanguage] : q.starterCode).replace(/'/g, "\\'").replace(/\n/g, "\\n")}';renderTest()"><i class="fa-solid fa-rotate-left"></i> Reset</span>
+                    </div>
+                    <div class="editor-container">
+                        <textarea class="code-area" id="codeArea" spellcheck="false" oninput="state.answers[${q.id}]=this.value">${state.answers[q.id] || (typeof q.starterCode === 'object' ? q.starterCode[state.selectedLanguage] : q.starterCode)}</textarea>
+                    </div>
+                    <div style="padding:15px;background:#2d2d2d;border-top:1px solid #444;display:flex;justify-content:space-between;align-items:center">
+                        <div style="color:#9ca3af;font-size:12px" id="execStatus"></div>
+                        <button class="btn-primary" style="font-size:12px;padding:8px 16px" onclick="executeCode(${q.id})">
+                            <i class="fa-solid fa-play"></i> Run Code
+                        </button>
+                    </div>
+                    <div id="output-${q.id}" style="display:none;padding:15px;background:#1e1e1e;color:#e2e8f0;border-top:1px solid #444;font-family:'JetBrains Mono';font-size:12px;max-height:150px;overflow-y:auto">
+                    </div>
+                ` : `
+                    <div style="height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:rgba(255,255,255,0.2)">
+                        <i class="fa-solid fa-laptop-code" style="font-size:50px;margin-bottom:20px"></i>
+                        <div>Select a Coding Question</div>
+                    </div>
+                `}
+            </div>
+        </div>
+    </div>`;
+    
+    // Set language select value
+    setTimeout(() => {
+        const langSelect = document.getElementById('langSelect');
+        if(langSelect) langSelect.value = state.selectedLanguage;
+    }, 10);
+}
+
+async function executeCode(qId) {
+    const code = state.answers[qId];
+    const execStatus = document.getElementById('execStatus');
+    const outputDiv = document.getElementById(`output-${qId}`);
+    
+    if(!code) {
+        execStatus.innerText = 'Please write some code first';
+        return;
+    }
+    
+    execStatus.innerText = 'Executing...';
+    outputDiv.style.display = 'block';
+    outputDiv.innerHTML = '<span style="color:#f59e0b">⏳ Running...</span>';
+    
+    try {
+        const response = await fetch('/api/execute', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                code: code,
+                language: state.selectedLanguage,
+                input: ''
+            })
+        });
+        
+        const result = await response.json();
+        
+        if(result.success) {
+            execStatus.innerText = 'Execution successful ✓';
+            state.codeOutput[qId] = result.output;
+            state.answers[qId] = 'solved';
+            outputDiv.innerHTML = `<span style="color:var(--success)">✓ Output:</span><br>${result.output || '(no output)'}`;
+        } else {
+            execStatus.innerText = 'Execution failed ✗';
+            outputDiv.innerHTML = `<span style="color:#ef4444">✗ Error:</span><br>${result.error}`;
+        }
+    } catch(e) {
+        execStatus.innerText = 'Request failed';
+        outputDiv.innerHTML = `<span style="color:#ef4444">Error:</span> ${e.message}`;
+    }
+}
+
+function renderResult() {
+    document.getElementById('sidebar').classList.remove('hidden');
+    let solved = Object.keys(state.answers).length;
+    let score = solved * 10; // Dummy logic
+
+    document.getElementById('app').innerHTML = `
+    <div class="container fade-in" style="text-align:center">
+        <div style="margin-bottom:40px">
+            <h1 style="font-size:36px;margin-bottom:10px">Great Job, ${state.user.name}!</h1>
+            <p style="color:var(--text-muted)">You have completed the ${state.currentCompany} assessment.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;max-width:800px;margin:0 auto">
+            <div style="background:white;padding:40px;border-radius:24px;box-shadow:var(--shadow)">
+                <div style="font-size:60px;font-weight:800;color:var(--primary);margin-bottom:10px">${Math.min(score, 100)}%</div>
+                <div style="color:var(--text-muted)">Overall Score</div>
+            </div>
+            
+            <div style="background:white;padding:40px;border-radius:24px;box-shadow:var(--shadow);text-align:left">
+                <h3 style="margin-top:0">AI Insights</h3>
+                <ul style="padding-left:20px;line-height:1.8;color:var(--text-muted)">
+                    <li>Strong in <b>Logical Reasoning</b>.</li>
+                    <li>CGPA <b>${state.user.cgpa}</b> boosts your profile.</li>
+                    <li>Needs improvement in <b>Java</b>, <b>Python</b>, and <b>JavaScript</b>.</li>
+                </ul>
+            </div>
+        </div>
+
+        <button class="btn-primary" style="margin-top:40px" onclick="switchView('dashboard')">Back to Dashboard</button>
+    </div>`;
+}
+
+function renderPracticeLabs() {
+    document.getElementById('sidebar').classList.remove('hidden');
+    const labs = [
+        {id: 1, title: 'Two Sum Problem', category: 'Array', difficulty: 'Easy', solved: true, xp: 100, description: 'Find two numbers that add up to a target sum', content: 'Given an array of integers nums and an integer target, return the indices of the two numbers such that they add up to target.'},
+        {id: 2, title: 'Longest Substring', category: 'String', difficulty: 'Medium', solved: false, xp: 200, description: 'Find longest substring without repeating characters', content: 'Given a string s, find the length of the longest substring without repeating characters.'},
+        {id: 3, title: 'Binary Tree Traversal', category: 'Trees', difficulty: 'Medium', solved: false, xp: 250, description: 'Master all tree traversal techniques', content: 'Learn and implement inorder, preorder, and postorder traversals of binary trees.'},
+        {id: 4, title: 'Graph Shortest Path', category: 'Graph', difficulty: 'Hard', solved: false, xp: 400, description: 'Find shortest path using Dijkstra\'s algorithm', content: 'Implement Dijkstra\'s algorithm to find the shortest path between two nodes in a weighted graph.'},
+        {id: 5, title: 'Dynamic Programming Knapsack', category: 'DP', difficulty: 'Hard', solved: true, xp: 350, description: '0/1 Knapsack optimization problem', content: 'Solve the 0/1 knapsack problem using dynamic programming with optimal substructure.'},
+        {id: 6, title: 'Merge K Sorted Lists', category: 'Linked List', difficulty: 'Hard', solved: false, xp: 300, description: 'Merge multiple sorted linked lists', content: 'Efficiently merge k sorted linked lists into one sorted linked list.'}
+    ];
+
+    // If a lab is selected, show its detail page
+    if(state.selectedLabId) {
+        const lab = labs.find(l => l.id === state.selectedLabId);
+        document.getElementById('app').innerHTML = `
+        <div class="container fade-in">
+            <button onclick="state.selectedLabId=null;renderPracticeLabs()" class="btn-secondary" style="margin-bottom:20px">← Back to Labs</button>
+            
+            <div style="background:white;padding:40px;border-radius:24px;box-shadow:var(--shadow)">
+                <div style="display:flex;align-items:center;gap:20px;margin-bottom:30px">
+                    <div style="width:60px;height:60px;background:${lab.difficulty === 'Easy' ? '#10b98115' : lab.difficulty === 'Medium' ? '#f59e0b15' : '#ef444415'};border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;color:${lab.difficulty === 'Easy' ? '#10b981' : lab.difficulty === 'Medium' ? '#f59e0b' : '#ef4444'}">
+                        ${lab.solved ? '<i class="fa-solid fa-check"></i>' : ''}${!lab.solved ? lab.category[0] : ''}
+                    </div>
+                    <div>
+                        <h1 style="margin:0;font-size:32px">${lab.title}</h1>
+                        <p style="margin:5px 0 0 0;color:var(--text-muted)">${lab.category} | <span style="background:${lab.difficulty === 'Easy' ? '#d1fae5' : lab.difficulty === 'Medium' ? '#fef3c7' : '#fee2e2'};color:${lab.difficulty === 'Easy' ? '#065f46' : lab.difficulty === 'Medium' ? '#92400e' : '#7f1d1d'};padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">${lab.difficulty}</span></p>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc;padding:25px;border-radius:16px;margin-bottom:30px">
+                    <h3 style="margin-top:0">Overview</h3>
+                    <p style="line-height:1.8;color:var(--text-main)">${lab.content}</p>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px">
+                    <div style="background:#e0e7ff;padding:20px;border-radius:12px">
+                        <p style="margin:0 0 5px 0;color:var(--text-muted);font-size:12px">Difficulty Level</p>
+                        <h3 style="margin:0;color:var(--primary)">${lab.difficulty}</h3>
+                    </div>
+                    <div style="background:#dbeafe;padding:20px;border-radius:12px">
+                        <p style="margin:0 0 5px 0;color:var(--text-muted);font-size:12px">XP Reward</p>
+                        <h3 style="margin:0;color:#3b82f6">${lab.xp} Points</h3>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc;padding:25px;border-radius:16px;margin-bottom:30px">
+                    <h3 style="margin-top:0">Examples</h3>
+                    <div style="background:white;padding:15px;border-radius:8px;margin-bottom:15px;font-family:'JetBrains Mono';font-size:13px">
+                        <div style="color:var(--primary);margin-bottom:8px"><b>Input:</b> nums = [2,7,11,15], target = 9</div>
+                        <div style="color:var(--success);margin-bottom:8px"><b>Output:</b> [0, 1]</div>
+                        <div style="color:var(--text-muted);font-size:12px">Explanation: nums[0] + nums[1] == 9, so we return [0, 1]</div>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc;padding:25px;border-radius:16px;margin-bottom:30px">
+                    <h3 style="margin-top:0">Hints</h3>
+                    <ul style="margin:0;padding-left:20px;color:var(--text-main)">
+                        <li>Think about using a hash map to store the values you've seen</li>
+                        <li>For each number, check if target - number exists in the hash map</li>
+                        <li>Time complexity should be O(n), not O(n²)</li>
+                    </ul>
+                </div>
+
+                <div style="background:#f8fafc;padding:25px;border-radius:16px;margin-bottom:30px">
+                    <h3 style="margin-top:0">Solutions Submitted</h3>
+                    <div style="background:white;padding:15px;border-radius:8px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                            <p style="margin:0;font-weight:600">Python Solution (Optimal)</p>
+                            <p style="margin:5px 0 0 0;color:var(--text-muted);font-size:12px">Accepted | 1 day ago</p>
+                        </div>
+                        <i class="fa-solid fa-check-circle" style="color:var(--success);font-size:24px"></i>
+                    </div>
+                </div>
+
+                ${!lab.solved ? `
+                <button class="btn-primary" style="width:100%;padding:15px;font-size:16px" onclick="alert('Code Editor Coming Soon!')">
+                    <i class="fa-solid fa-code"></i> Solve Now
+                </button>
+                ` : `
+                <button class="btn-secondary" style="width:100%;padding:15px;font-size:16px;background:var(--success);color:white;border:none">
+                    <i class="fa-solid fa-check"></i> ✓ Problem Solved
+                </button>
+                `}
+            </div>
+        </div>`;
+        return;
+    }
+
+    document.getElementById('app').innerHTML = `
+    <div class="container fade-in">
+        <header style="margin-bottom:30px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <h1 style="margin:0;font-size:32px">Practice Labs</h1>
+                <p style="color:var(--text-muted);margin-top:5px">Master coding with 200+ interactive problems</p>
+            </div>
+            <div style="text-align:right">
+                <div style="font-size:28px;font-weight:700;color:var(--primary)">1,450</div>
+                <div style="color:var(--text-muted);font-size:13px">Total XP Earned</div>
+            </div>
+        </header>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:40px">
+            <div style="background:linear-gradient(135deg,#6366f1,#a855f7);color:white;padding:25px;border-radius:16px;box-shadow:var(--shadow)">
+                <h3 style="margin:0 0 10px 0;font-size:28px">14</h3>
+                <p style="margin:0;font-size:13px;opacity:0.9">Problems Solved</p>
+            </div>
+            <div style="background:linear-gradient(135deg,#10b981,#06b6d4);color:white;padding:25px;border-radius:16px;box-shadow:var(--shadow)">
+                <h3 style="margin:0 0 10px 0;font-size:28px">8</h3>
+                <p style="margin:0;font-size:13px;opacity:0.9">Day Streak</p>
+            </div>
+            <div style="background:linear-gradient(135deg,#f59e0b,#ec4899);color:white;padding:25px;border-radius:16px;box-shadow:var(--shadow)">
+                <h3 style="margin:0 0 10px 0;font-size:28px">92%</h3>
+                <p style="margin:0;font-size:13px;opacity:0.9">Success Rate</p>
+            </div>
+        </div>
+
+        <h3>All Labs</h3>
+        <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:var(--shadow)">
+            ${labs.map(lab => `
+                <div onclick="state.selectedLabId=${lab.id};renderPracticeLabs()" style="padding:20px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;transition:0.2s;cursor:pointer" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='white'">
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:15px">
+                            <div style="width:40px;height:40px;background:${lab.difficulty === 'Easy' ? '#10b98115' : lab.difficulty === 'Medium' ? '#f59e0b15' : '#ef444415'};border-radius:10px;display:flex;align-items:center;justify-content:center;color:${lab.difficulty === 'Easy' ? '#10b981' : lab.difficulty === 'Medium' ? '#f59e0b' : '#ef4444'};font-weight:700">
+                                ${lab.solved ? '<i class="fa-solid fa-check"></i>' : lab.difficulty[0]}
+                            </div>
+                            <div>
+                                <h4 style="margin:0;color:var(--text-main);font-size:15px">${lab.title}</h4>
+                                <p style="margin:5px 0 0 0;color:var(--text-muted);font-size:12px">${lab.category}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:20px">
+                        <span style="background:${lab.difficulty === 'Easy' ? '#d1fae5' : lab.difficulty === 'Medium' ? '#fef3c7' : '#fee2e2'};color:${lab.difficulty === 'Easy' ? '#065f46' : lab.difficulty === 'Medium' ? '#92400e' : '#7f1d1d'};padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600">${lab.difficulty}</span>
+                        <div style="text-align:right">
+                            <div style="font-weight:700;color:var(--primary)">${lab.xp} XP</div>
+                            <div style="font-size:12px;color:var(--text-muted)">${lab.solved ? 'Completed' : 'Not Started'}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>`;
+}
+
+// Chart initialization functions
+function initializeWeeklyActivityChart() {
+    const ctx = document.getElementById('weeklyActivityChart');
+    if(!ctx) return;
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+            datasets: [
+                {
+                    label: 'Problems Solved',
+                    data: [5, 8, 7, 12, 14, 10, 6],
+                    backgroundColor: 'rgba(99, 102, 241, 0.6)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: 'rgba(99, 102, 241, 0.8)'
+                },
+                {
+                    label: 'Topics Covered',
+                    data: [3, 4, 3, 6, 7, 5, 3],
+                    backgroundColor: 'rgba(168, 85, 247, 0.6)',
+                    borderColor: 'rgba(168, 85, 247, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: 'rgba(168, 85, 247, 0.8)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: true, labels: { font: { size: 13 }, padding: 20 } } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+function initializePerformanceTrendChart() {
+    const ctx = document.getElementById('performanceTrendChart');
+    if(!ctx) return;
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+            datasets: [
+                {
+                    label: 'Accuracy %',
+                    data: [75, 78, 82, 85, 86, 87.5],
+                    borderColor: 'rgba(16, 185, 129, 1)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 8
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: true, labels: { font: { size: 13 }, padding: 20 } } },
+            scales: {
+                y: { beginAtZero: true, min: 0, max: 100, grid: { color: 'rgba(0,0,0,0.05)' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+function renderProfile() {
+    document.getElementById('sidebar').classList.remove('hidden');
+    document.getElementById('app').innerHTML = `
+    <div class="container fade-in">
+        <button onclick="switchView('dashboard')" class="btn-secondary" style="margin-bottom:20px">Back</button>
+        
+        <div style="background:white;padding:40px;border-radius:24px;box-shadow:var(--shadow);max-width:800px;margin:0 auto">
+            <div style="text-align:center;margin-bottom:40px">
+                <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg, #6366f1, #a855f7);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:50px;color:white">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <h1 style="margin:0 0 10px 0">${state.user.name}</h1>
+                <p style="color:var(--text-muted);margin:0">${state.user.email}</p>
+            </div>
+
+            <div style="background:#f8fafc;padding:25px;border-radius:16px;margin-bottom:30px">
+                <h3 style="margin-top:0">Academic Information</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                    <div>
+                        <p style="color:var(--text-muted);margin:0 0 5px 0;font-size:13px">Current CGPA</p>
+                        <h3 style="margin:0;font-size:28px;color:var(--primary)">${state.user.cgpa}</h3>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-muted);margin:0 0 5px 0;font-size:13px">Eligibility Status</p>
+                        <h3 style="margin:0;font-size:18px;color:var(--success)">✓ All Drives</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc;padding:25px;border-radius:16px;margin-bottom:30px">
+                <h3 style="margin-top:0">Performance Summary</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                    <div>
+                        <p style="color:var(--text-muted);margin:0 0 5px 0;font-size:13px">Total Problems Solved</p>
+                        <h3 style="margin:0;font-size:28px;color:var(--accent)">42</h3>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-muted);margin:0 0 5px 0;font-size:13px">Overall Accuracy</p>
+                        <h3 style="margin:0;font-size:28px;color:var(--success)">87.5%</h3>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-muted);margin:0 0 5px 0;font-size:13px">Current Streak</p>
+                        <h3 style="margin:0;font-size:28px;color:#f59e0b">8 Days 🔥</h3>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-muted);margin:0 0 5px 0;font-size:13px">Total XP Earned</p>
+                        <h3 style="margin:0;font-size:28px;color:#8b5cf6">1,450</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc;padding:25px;border-radius:16px;margin-bottom:30px">
+                <h3 style="margin-top:0">Achievements</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:15px">
+                    <div style="background:white;padding:15px;border-radius:12px;text-align:center;border:2px solid #fbbf24">
+                        <div style="font-size:30px;margin-bottom:5px">🥇</div>
+                        <div style="font-size:12px;font-weight:600">Streak Master</div>
+                    </div>
+                    <div style="background:white;padding:15px;border-radius:12px;text-align:center;border:2px solid #60a5fa">
+                        <div style="font-size:30px;margin-bottom:5px">💡</div>
+                        <div style="font-size:12px;font-weight:600">Problem Solver</div>
+                    </div>
+                    <div style="background:white;padding:15px;border-radius:12px;text-align:center;border:2px solid #34d399">
+                        <div style="font-size:30px;margin-bottom:5px">⚡</div>
+                        <div style="font-size:12px;font-weight:600">Speed Demon</div>
+                    </div>
+                    <div style="background:white;padding:15px;border-radius:12px;text-align:center;border:2px solid #f87171">
+                        <div style="font-size:30px;margin-bottom:5px">🎯</div>
+                        <div style="font-size:12px;font-weight:600">Accuracy Star</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:#f8fafc;padding:25px;border-radius:16px">
+                <h3 style="margin-top:0">Recent Activity</h3>
+                <div style="display:flex;flex-direction:column;gap:15px">
+                    <div style="display:flex;align-items:center;gap:15px;padding:10px 0;border-bottom:1px solid #e2e8f0">
+                        <i class="fa-solid fa-check" style="color:var(--success);font-size:18px"></i>
+                        <div>
+                            <p style="margin:0;font-weight:600">Solved "Two Sum Problem"</p>
+                            <p style="margin:0;color:var(--text-muted);font-size:12px">2 hours ago</p>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:15px;padding:10px 0;border-bottom:1px solid #e2e8f0">
+                        <i class="fa-solid fa-star" style="color:#f59e0b;font-size:18px"></i>
+                        <div>
+                            <p style="margin:0;font-weight:600">Achieved 7-Day Streak</p>
+                            <p style="margin:0;color:var(--text-muted);font-size:12px">1 day ago</p>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:15px;padding:10px 0">
+                        <i class="fa-solid fa-book" style="color:var(--primary);font-size:18px"></i>
+                        <div>
+                            <p style="margin:0;font-weight:600">Completed "Arrays & Strings" Module</p>
+                            <p style="margin:0;color:var(--text-muted);font-size:12px">3 days ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
+function renderAIInterview() {
+    document.getElementById('sidebar').classList.remove('hidden');
+    document.getElementById('app').innerHTML = `
+    <div class="container fade-in">
+        <header style="margin-bottom:30px">
+            <h1 style="margin:0;font-size:32px">🤖 AI Interview Preparation</h1>
+            <p style="color:var(--text-muted);margin-top:5px">Practice with AI-powered behavioral and technical interviews</p>
+        </header>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:25px;margin-bottom:40px">
+            <div class="company-card" style="cursor:pointer;border-left:4px solid #8b5cf6">
+                <div class="c-logo" style="background:#8b5cf615;color:#8b5cf6">
+                    <i class="fa-solid fa-microphone"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">Technical Interview</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Master data structures, algorithms, and system design. Get real-time feedback on your solutions.</p>
+                </div>
+                <button class="btn-primary" style="width:100%;margin-top:15px">Start Interview</button>
+            </div>
+
+            <div class="company-card" style="cursor:pointer;border-left:4px solid #ec4899">
+                <div class="c-logo" style="background:#ec489915;color:#ec4899">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">Behavioral Interview</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Learn STAR method, leadership qualities, and team collaboration skills. Perfect your answers.</p>
+                </div>
+                <button class="btn-primary" style="width:100%;margin-top:15px">Start Interview</button>
+            </div>
+
+            <div class="company-card" style="cursor:pointer;border-left:4px solid #f59e0b">
+                <div class="c-logo" style="background:#f59e0b15;color:#f59e0b">
+                    <i class="fa-solid fa-briefcase"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">Case Study Interview</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Analyze business scenarios and present solutions. Develop strategic thinking skills.</p>
+                </div>
+                <button class="btn-primary" style="width:100%;margin-top:15px">Start Interview</button>
+            </div>
+
+            <div class="company-card" style="cursor:pointer;border-left:4px solid #10b981">
+                <div class="c-logo" style="background:#10b98115;color:#10b981">
+                    <i class="fa-solid fa-person-chalkboard"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">Mock Presentation</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Practice your projects and achievements. Get feedback on communication and confidence.</p>
+                </div>
+                <button class="btn-primary" style="width:100%;margin-top:15px">Start Interview</button>
+            </div>
+
+            <div class="company-card" style="cursor:pointer;border-left:4px solid #06b6d4">
+                <div class="c-logo" style="background:#06b6d415;color:#06b6d4">
+                    <i class="fa-solid fa-globe"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">Culture Fit Interview</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Understand company culture and values. Align your values with the organization.</p>
+                </div>
+                <button class="btn-primary" style="width:100%;margin-top:15px">Start Interview</button>
+            </div>
+
+            <div class="company-card" style="cursor:pointer;border-left:4px solid #a855f7">
+                <div class="c-logo" style="background:#a855f715;color:#a855f7">
+                    <i class="fa-solid fa-circle-question"></i>
+                </div>
+                <div>
+                    <h3 style="margin:0 0 5px 0">HR Round Interview</h3>
+                    <p style="font-size:13px;color:var(--text-muted);line-height:1.5">Navigate HR questions, compensation discussions, and offer negotiations confidently.</p>
+                </div>
+                <button class="btn-primary" style="width:100%;margin-top:15px">Start Interview</button>
+            </div>
+        </div>
+
+        <div style="background:linear-gradient(135deg, #e0e7ff, #f3e8ff);padding:30px;border-radius:20px;border-left:4px solid var(--primary)">
+            <h3 style="margin-top:0">How AI Interview Works</h3>
+            <ol style="line-height:2;color:var(--text-main)">
+                <li><b>Smart Questions:</b> AI generates contextual questions based on your profile and target role.</li>
+                <li><b>Real-time Feedback:</b> Get instant feedback on your answers, communication, and confidence level.</li>
+                <li><b>Performance Metrics:</b> Track your improvement across multiple interview dimensions.</li>
+                <li><b>Personalized Coaching:</b> AI-powered suggestions to improve weak areas.</li>
+                <li><b>Certification:</b> Get certified after completing interview modules and achieving high scores.</li>
+            </ol>
+        </div>
+    </div>`;
+}
+
+function renderCompanies() {
+    document.getElementById('sidebar').classList.remove('hidden');
+    const userCGPA = parseFloat(state.user.cgpa) || 7.5;
+    
+    // Company database
+    const companies = [
+        { id: 1, name: 'Google', cutoff: 8.5, logo: '🔍', color: '#4285F4', description: 'Software Engineer' },
+        { id: 2, name: 'Infosys', cutoff: 6.5, logo: '∞', color: '#00a699', description: 'Specialist Programmer' },
+        { id: 3, name: 'TCS', cutoff: 6.0, logo: 'T', color: '#0066cc', description: 'Systems Engineer' },
+        { id: 4, name: 'Wipro', cutoff: 6.0, logo: 'W', color: '#01758a', description: 'Project Engineer' },
+        { id: 5, name: 'Microsoft', cutoff: 8.0, logo: '⊞', color: '#00a4ef', description: 'Software Engineer' },
+        { id: 6, name: 'Amazon', cutoff: 7.5, logo: '🔶', color: '#FF9900', description: 'SDE' }
+    ];
+    
+    const companyCards = companies.map(company => {
+        const isEligible = userCGPA >= company.cutoff;
+        const eligibilityBadgeColor = isEligible ? '#10b981' : '#ef4444';
+        const eligibilityBadgeText = isEligible ? '✓ Eligible' : '✗ Not Eligible';
+        const buttonColor = isEligible ? 'var(--primary-grad)' : '#cbd5e1';
+        const buttonText = isEligible ? '→ Apply Now' : '✗ Not Eligible';
+        
+        return `
+            <div class="company-card" style="display:flex;flex-direction:column;gap:15px">
+                <div style="display:flex;justify-content:space-between;align-items:start">
+                    <div style="display:flex;align-items:center;gap:15px;flex:1">
+                        <div style="width:70px;height:70px;border-radius:16px;background:${company.color};color:white;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700">
+                            ${company.logo}
+                        </div>
+                        <div>
+                            <h3 style="margin:0;font-size:20px;font-weight:700">${company.name}</h3>
+                            <p style="margin:5px 0 0 0;color:var(--text-muted);font-size:13px">${company.description}</p>
+                        </div>
+                    </div>
+                    <div style="background:${eligibilityBadgeColor};color:white;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;white-space:nowrap">
+                        ${eligibilityBadgeText}
+                    </div>
+                </div>
+                
+                <div style="padding:15px;background:#f8fafc;border-radius:12px">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
+                        <div>
+                            <p style="margin:0;color:var(--text-muted);font-size:12px">Required CGPA</p>
+                            <p style="margin:5px 0 0 0;font-size:18px;font-weight:700;color:var(--text-main)">${company.cutoff}</p>
+                        </div>
+                        <div>
+                            <p style="margin:0;color:var(--text-muted);font-size:12px">Your CGPA</p>
+                            <p style="margin:5px 0 0 0;font-size:18px;font-weight:700;color:${isEligible ? '#10b981' : '#ef4444'}">${userCGPA}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="applyCompany(${company.id}, '${company.name}', ${isEligible})" 
+                        style="width:100%;padding:12px 20px;border-radius:12px;border:none;font-weight:600;font-size:14px;cursor:${isEligible ? 'pointer' : 'not-allowed'};background:${buttonColor};color:white;transition:0.3s">
+                    ${buttonText}
+                </button>
+            </div>
+        `;
+    }).join('');
+    
+    document.getElementById('app').innerHTML = `
+    <div class="container fade-in">
+        <header style="margin-bottom:30px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <h1 style="margin:0;font-size:32px">Companies</h1>
+                <p style="color:var(--text-muted);margin-top:5px">Find companies matching your profile, check vacancies, and apply instantly</p>
+            </div>
+            <div style="background:#fff;padding:15px 20px;border-radius:12px;border:1px solid var(--border)">
+                <p style="margin:0;color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:1px">Your CGPA</p>
+                <p style="margin:5px 0 0 0;font-size:24px;font-weight:700;color:var(--primary)">${userCGPA}</p>
+            </div>
+        </header>
+        
+        <div class="company-grid">
+            ${companyCards}
+        </div>
+        
+        <div style="margin-top:40px;background:linear-gradient(135deg, #e0e7ff, #f3e8ff);padding:25px;border-radius:16px;border-left:4px solid var(--primary)">
+            <h3 style="margin-top:0">💡 How It Works</h3>
+            <ul style="margin:0;padding-left:20px;line-height:1.8;color:var(--text-main)">
+                <li><strong>Check Eligibility:</strong> Your CGPA is ${userCGPA}. Only apply to companies with equal or lower cutoff.</li>
+                <li><strong>Check Vacancies:</strong> Apply to companies with available positions. Once all positions fill up, the company shows "No Openings".</li>
+                <li><strong>Required Skills:</strong> Learn the required skills for each company before appearing for interviews.</li>
+                <li><strong>Apply Now:</strong> Click "Apply Now" on eligible companies with open positions.</li>
+                <li><strong>Prepare:</strong> Use our AI Interview and Practice Labs to boost your chances!</li>
+            </ul>
+        </div>
+    </div>`;
+}
+
+function applyCompany(companyId, companyName, isEligible) {
+
+    // Step 1: Check eligibility
+    if (!isEligible) {
+        alert("❌ You cannot apply to this company. Your CGPA does not meet the minimum requirement.");
+        return;
+    }
+
+    // Step 2: Confirmation popup
+    if (confirm(`Apply for ${companyName}? You will be notified once your application is processed.`)) {
+
+        // Step 3: Send request to backend
+        fetch("/api/apply", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                user_id: state.user.id,
+                company_id: companyId,
+                company_name: companyName
+            })
+        })
+
+        // Step 4: Backend response handling
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`✅ Successfully applied to ${companyName}!`);
+                renderCompanies(); // Refresh company list
+            } else {
+                alert(`⚠️ ${data.message || "Could not apply to this company"}`);
+            }
+        })
+
+        // Step 5: Error handling
+        .catch(err => {
+            alert("❌ Error applying to company: " + err.message);
+            console.log("Application Error:", err);
+        });
+    }
+}
+
+function renderAnalytics() {
+    document.getElementById('sidebar').classList.remove('hidden');
+    document.getElementById('app').innerHTML = `
+    <div class="container fade-in">
+        <header style="margin-bottom:30px;display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <h1 style="margin:0;font-size:32px">Analytics</h1>
+                <p style="color:var(--text-muted);margin-top:5px">Your performance insights and progress tracking</p>
+            </div>
+            <button class="btn-secondary">Export Report</button>
+        </header>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-bottom:40px">
+            <div style="background:white;padding:25px;border-radius:16px;box-shadow:var(--shadow)">
+                <div style="display:flex;justify-content:space-between;align-items:start">
+                    <div>
+                        <p style="margin:0 0 8px 0;color:var(--text-muted);font-size:13px">Accuracy Rate</p>
+                        <h2 style="margin:0;font-size:32px;color:var(--primary)">87.5%</h2>
+                    </div>
+                    <i class="fa-solid fa-arrow-up" style="color:var(--success);font-size:20px"></i>
+                </div>
+                <p style="margin:15px 0 0 0;font-size:12px;color:var(--text-muted)">+5.2% from last week</p>
+            </div>
+
+            <div style="background:white;padding:25px;border-radius:16px;box-shadow:var(--shadow)">
+                <div style="display:flex;justify-content:space-between;align-items:start">
+                    <div>
+                        <p style="margin:0 0 8px 0;color:var(--text-muted);font-size:13px">Avg. Time / Problem</p>
+                        <h2 style="margin:0;font-size:32px;color:var(--accent)">8:45 min</h2>
+                    </div>
+                    <i class="fa-solid fa-arrow-down" style="color:var(--success);font-size:20px"></i>
+                </div>
+                <p style="margin:15px 0 0 0;font-size:12px;color:var(--text-muted)">-2.1 min improvement</p>
+            </div>
+
+            <div style="background:white;padding:25px;border-radius:16px;box-shadow:var(--shadow)">
+                <div style="display:flex;justify-content:space-between;align-items:start">
+                    <div>
+                        <p style="margin:0 0 8px 0;color:var(--text-muted);font-size:13px">Problems Solved</p>
+                        <h2 style="margin:0;font-size:32px;color:var(--success)">42</h2>
+                    </div>
+                    <i class="fa-solid fa-arrow-up" style="color:var(--success);font-size:20px"></i>
+                </div>
+                <p style="margin:15px 0 0 0;font-size:12px;color:var(--text-muted)">+8 this week</p>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom:20px">Performance by Category</h3>
+        <div style="background:white;padding:30px;border-radius:16px;box-shadow:var(--shadow);margin-bottom:40px">
+            ${[
+                {name: 'Array & Strings', score: 92, color: '#6366f1'},
+                {name: 'Trees & Graphs', score: 78, color: '#a855f7'},
+                {name: 'Dynamic Programming', score: 65, color: '#ec4899'},
+                {name: 'System Design', score: 71, color: '#f59e0b'},
+                {name: 'Database Concepts', score: 85, color: '#10b981'}
+            ].map(cat => `
+                <div style="margin-bottom:25px">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                        <span style="font-weight:600;color:var(--text-main)">${cat.name}</span>
+                        <span style="color:var(--text-muted);font-size:13px">${cat.score}%</span>
+                    </div>
+                    <div style="height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden">
+                        <div style="height:100%;background:${cat.color};width:${cat.score}%;border-radius:4px"></div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+
+        <h3 style="margin-bottom:20px">Weekly Activity</h3>
+        <div style="background:white;padding:30px;border-radius:16px;box-shadow:var(--shadow);margin-bottom:40px">
+            <canvas id="weeklyActivityChart" style="max-height:300px"></canvas>
+        </div>
+
+        <h3 style="margin-bottom:20px">Performance Trends</h3>
+        <div style="background:white;padding:30px;border-radius:16px;box-shadow:var(--shadow);margin-bottom:40px">
+            <canvas id="performanceTrendChart" style="max-height:300px"></canvas>
+        </div>
+
+        <h3 style="margin:40px 0 20px 0">AI Recommendations</h3>
+        <div style="background:linear-gradient(135deg,#e0e7ff,#f3e8ff);padding:25px;border-radius:16px;border-left:4px solid var(--primary)">
+            <ul style="margin:0;padding-left:20px;line-height:1.8;color:var(--text-main)">
+                <li><b>Focus on Dynamic Programming:</b> Your score here is 22% below your average. Spend more time on DP problems.</li>
+                <li><b>Consistency matters:</b> You solved 8 problems this week. Try to maintain a 10+ daily challenge streak.</li>
+                <li><b>Next target:</b> With your current progress, you're ready to attempt System Design interviews.</li>
+                <li><b>Time optimization:</b> Your average solving time is decreasing well. Keep up the good work!</li>
+            </ul>
+        </div>
+    </div>`;
+
+    // Initialize charts after DOM is ready
+    setTimeout(() => {
+        initializeWeeklyActivityChart();
+        initializePerformanceTrendChart();
+    }, 100);
+}
+</script>
+</body>
+</html>
